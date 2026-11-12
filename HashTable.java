@@ -1,25 +1,40 @@
 package assign09;
 
 import java.util.ArrayList;
+
+
+
 import java.util.List;
+
+
+/**
+ * This class is a hash table data strucure, it implemennts a map intereace, it has quadratic probing when there is collision, it has lazy deletion, also dynamic resizing on a user specified maximum load factor. 
+ * 
+ * @author Lune Holliman & Juncheng Zhou
+ * @version November 9th, 2026
+ */
 
 public class HashTable<K, V> implements Map<K, V> {
 
-	// number of items in the hash table
 	private int numOfItems;
 	private Object[] table;
 	private int capacity;          
 	private double maxLoadFactor;  
 	private static final Object DELETED = new Object();
+	private int collisionCount;
 
 	
 	/**
-	 * Creates a new hash table with a default capacity.
+	 * makes a new hashtable with the inital capacity of 101, then it also has a specific maximum load factor (for this its 0.5)
 	 */
 	public HashTable() {
 		this(0.5);
 	}
-    
+    /**
+     * makes a new hash table, it has a capacity of 101, and the user specific laod facotr,
+     * @param maxLoadFactor - the maximum load factor before it rehashes
+     * @throws IllegalArgumentException - if the max load facotr is not between 0 and 1.
+     */
 	public HashTable(double maxLoadFactor) {
 	    if (maxLoadFactor <= 0 || maxLoadFactor >= 1)
 	        throw new IllegalArgumentException("LoadFactor must between 0 and 1");
@@ -28,27 +43,40 @@ public class HashTable<K, V> implements Map<K, V> {
 	    this.capacity = 101;  
 	    this.table = new Object[capacity];
 	    this.numOfItems = 0;
-	}
+	    this.collisionCount = 0;
+	    }
 	/**
-	 * @return the (current) capacity of this hash table
+	 * returns the current capacity of the hash table
+	 * 
+	 * @return the capacity of the table
 	 */
 	public int capacity() {
 		return table.length;
 	}
 
 	/**
-	 * @return the number of items stored in this hash table
+	 * returns the number of items in the hash table, ones that have the active key value pairs
+	 * 
+	 * @return the size of the map
 	 */
 	public int size() {
 		return numOfItems;
 	}
-
+	/**
+	 * removes and resets the mappigns and table
+	 */
 	@Override
 	public void clear() {
 		table = new Object[capacity];
         numOfItems = 0;		
+        collisionCount = 0;
 	}
-
+	/**
+	 * determines if one or more than one key is mapped ot a specific value from the param
+	 * 
+	 * @param value - if the value being searched for
+	 * @param true if the value exists, and false if not
+	 */
 	@Override
 	public boolean containsValue(V value) {
         for (int i = 0; i < capacity; i++) {
@@ -63,7 +91,11 @@ public class HashTable<K, V> implements Map<K, V> {
         return false;
     }
 
-
+	/**
+	 * this returns a list of all the mappings in the map
+	 * 
+	 * @return the list of mapentry values represent all acitve mappings.
+	 */
 	@Override
 	public List<MapEntry<K, V>> entries() {
         List<MapEntry<K, V>> result = new ArrayList<>();
@@ -76,7 +108,12 @@ public class HashTable<K, V> implements Map<K, V> {
         }
         return result;
     }
-
+	/**
+	 * gets the value which is attached to the specific key which it is mapped to
+	 * @param key - the key whose associated value is meant to be returned
+	 * @return the mapped value, or null if the key is not present
+	 * @throws NullPointerException if said key is actually null
+	 */
 	@Override
 	public V get(K key) {
         int[] result = findIndex(key);
@@ -87,12 +124,23 @@ public class HashTable<K, V> implements Map<K, V> {
         }
         return null;
     }
-
+	/**
+	 * checks if the map is empty
+	 * 
+	 * @return returns true if empty, and vice versa
+	 */
 	@Override
 	public boolean isEmpty() {
 		return numOfItems == 0;
 	}
-
+	/**
+	 * assosicated a param value with a param key, then if its in tree it overwrites the old one
+	 * 
+	 * @param key - the param key to be assoicated with the value
+	 * @param value - the param value to be assoicated with the key
+	 * @return the previous value that was assoicated with the key, or if there was no mapping, its null
+	 * @throws NullPointerException if the param key is null
+	 */
 	@Override
 	public V put(K key, V value) {
         int[] result = findIndex(key);
@@ -116,7 +164,13 @@ public class HashTable<K, V> implements Map<K, V> {
             return null;
         }
     }
-
+	/**
+	 * removes a key from the the map, uses lazy deletion
+	 * 
+	 * @param key - key whose is meant to be removed
+	 * @return the preevious value with the key, or null if nothing
+	 * @throws NullPointerException if the key is null
+	 */
 	@Override
 	public V remove(K key) {
         int[] result = findIndex(key);
@@ -132,11 +186,25 @@ public class HashTable<K, V> implements Map<K, V> {
         return oldValue;
     }
 
+	/**
+	 * this method checks if the mapping has a specific value
+	 * 
+	 * @param key - the key who is being checked
+	 * @return true if it is in the mapping, false if not
+	 * @throws NullPointerException if the key is null
+	 */
 	@Override
 	public boolean containsKey(K key) {
 		return findIndex(key)[1] == 0;
 	}
 	
+	
+	/**
+	 * this is a helper method to find the table index for a key, it makes use of quadratic probing
+	 * @param key - the key that is being searched for
+	 * 
+	 * @return returns an integer array where index 0 is the target array spot and index 1 is the status flag
+	 */
 	private int[] findIndex(K key) {
         int start = Math.abs(key.hashCode()) % capacity;
         int firstDeleted = -1;
@@ -175,9 +243,8 @@ public class HashTable<K, V> implements Map<K, V> {
     }
 	
 	/**
-     * Rehashes the hash table by doubling the capacity (to the next prime)
-     * and reinserting all active entries.
-     */
+	 * this method doubles the capacity of the hash table to the next prime number, also re inserts all the entries
+	 */
     private void rehash() {
         Object[] oldTable = table;
         int oldCapacity = capacity;
@@ -201,7 +268,7 @@ public class HashTable<K, V> implements Map<K, V> {
     }
     
     /**
-     * Finds the smallest prime number greater than or equal to n.
+     * Finds the smallest prime number greater than or equal to n
      * 
      * @param n the starting point
      * @return the next prime number >= n
@@ -215,7 +282,7 @@ public class HashTable<K, V> implements Map<K, V> {
     }
     
     /**
-     * Checks if a number is prime.
+     * Checks if a number is prime
      * 
      * @param n the number to check
      * @return true if n is prime, false otherwise
@@ -229,5 +296,18 @@ public class HashTable<K, V> implements Map<K, V> {
             if (n % i == 0) return false;
         }
         return true;
+    }
+    /**
+     * returns the number of collisions to zero
+     */
+    public void resetNumberOfCollisions() {
+    	this.collisionCount = 0;
+    }
+    /**
+     * gets the number of collisions
+     * @return returns the number of collisions.
+     */
+    public int getNumberOfCollisions() {
+    	return this.collisionCount;
     }
 }

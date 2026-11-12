@@ -13,13 +13,13 @@ import timing.ArrayListGenerator;  // created for Assignment 5 analysis
  */
 public class StudentBadHashCollisionExperiment extends CollisionExperiment<StudentBadHash, Object> {
     private static String problemSizeDescription = "element count";
-    private static int problemSizeMin = 10000;
+    private static int problemSizeMin = 1000;
     private static int problemSizeCount = 10;
-    private static int problemSizeStep = 10000;
+    private static int problemSizeStep = 1000;
     
     // Counting collisions is more precise than collecting running times; therefore,
     // we need only a few iterations for each problem size.
-    private static int experimentIterationCount = 5; 
+    private static int experimentIterationCount = 2; 
     	
 	private StudentBadHash keyToPut;
     

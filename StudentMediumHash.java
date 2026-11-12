@@ -5,11 +5,11 @@ import java.text.DecimalFormat;
 /**
  * This class provides a simple representation for a University of Utah student.
  * Object's hashCode method is overridden with a correct hash function for this
- * object, but one that does a poor job of distributing students in a hash
+ * object, but one that does a okay job of distributing students in a hash
  * table.
  * 
- * @author CS 2420 course staff and ?
- * @version ?
+ * @author CS 2420 course staff and Lune Holliman and Juncheng Zhou
+ * @version November 10 2026
  */
 public class StudentMediumHash {
 	private int uid;
